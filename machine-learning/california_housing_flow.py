@@ -1,4 +1,4 @@
-from metaflow import FlowSpec, step, Parameter
+from metaflow import FlowSpec, step, Parameter, Flow
 
 class CaliforniaHousingML(FlowSpec):
     
@@ -13,6 +13,17 @@ class CaliforniaHousingML(FlowSpec):
         sample = dd.frame.sample(frac=self.sample_fraction)
         self.data = sample[sample.columns.drop('MedHouseVal')]
         self.target = sample['MedHouseVal']
+        self.next(self.log_data_stats)
+
+    @step
+    def log_data_stats(self):
+        import whylogs as why
+        import os
+        results = why.log(self.data)#.profile().view().to_pandas() 
+        run = Flow('CaliforniaHousingML').latest_run 
+        profile_log_name = "my_profile.{}.bin".format(run).replace("/", "")
+        os.makedirs("whylogs_profiles",exist_ok=True)
+        results.writer("local").option(base_dir="whylogs_profiles").write(dest=profile_log_name)     
         self.next(self.scaler_data)
 
     @step

@@ -130,3 +130,6 @@ dmypy.json
 
 #metaflow
 .metaflow/
+
+#whylogs_profiles
+whylogs_profiles/
